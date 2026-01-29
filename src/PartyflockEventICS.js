@@ -264,13 +264,12 @@ PartyflockEventICS.prototype.parseLineup = function(lineupElement) {
         } else {
             for(let subindex = 0; subindex < item.children[0].children.length; subindex++) {
                 let performer = {
-                    alias   : "",
-                    country : "",
-                    name    : "",
-                    time    : ""
+                    favourite : "",
+                    time      : "",
+                    name      : "",
+                    country   : "",
+                    genre     : ""
                 };
-
-                parsed += item.children[0].children[subindex].classList.contains("dj-favourite") ? " ❤ " : " 　 ";
 
                 for(let dataItem = 0; dataItem < item.children[0].children[subindex].children.length; dataItem++) {
                     let data = item.children[0].children[subindex].children[dataItem];
@@ -278,24 +277,28 @@ PartyflockEventICS.prototype.parseLineup = function(lineupElement) {
                     if(data.classList.contains("invisible"))
                         continue;
 
+                    performer.favourite = data.classList.contains("star") ? " ❤ " : " 　 ";
+
                     if(/^[0-9]{2}:[0-9]{2}\s-\s[0-9]{2}:[0-9]{2}:\s$/.test(data.textContent))
                         performer.time = data.textContent.trim();
 
                     if(data.getAttribute("itemprop") !== undefined && data.getAttribute("itemprop") === "performer")
                         performer.name = data.textContent.trim();
 
-                    if(data.classList.contains("countryflag")) {
-                        let flagIndex = parseInt(data.getAttribute("src").split(".")[0].split("/").pop());
+                    if(data.classList.contains("cflg"))
+                        performer.country = data.textContent.trim();
 
-                        if(this.countryFlags[flagIndex] !== undefined)
-                            performer.country += this.countryFlags[flagIndex];
-                    }
-
-                    if(data.classList.contains("small"))
-                        performer.alias += data.textContent.trim();
+                    if(data.classList.contains("master-genre"))
+                        performer.genre += data.textContent.trim();
                 }
 
-                parsed += ((performer.time.length > 0 ? performer.time + " " : "") + (item.children[0].children[subindex].textContent.indexOf("MC") > -1 ? "MC: " : "") + performer.name + (performer.alias.length > 0 ? " (" + performer.alias + ")" : "") + (item.children[0].children[subindex].textContent.indexOf("Live") > -1 ? " (live)" : "") + (performer.country.length > 0 ? " " + performer.country : "")).replace(/\s{2,}/g, " ") + "\\n";
+                parsed += (performer.favourite
+                        + (performer.time.length > 0 ? performer.time + " " : "")
+                        + (item.children[0].children[subindex].textContent.indexOf("MC") > -1 ? "MC: " : "")
+                        + performer.name
+                        + (item.children[0].children[subindex].textContent.indexOf("Live") > -1 ? " · live" : "")
+                        + performer.country
+                        + (performer.genre.length > 0 ? " (" + performer.genre + ")" : "")).replace(/\s{2,}/g, " ") + "\\n";
             }
         }
     }
